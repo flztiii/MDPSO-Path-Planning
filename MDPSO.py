@@ -3,7 +3,7 @@
 
 """
 
-粒子群优化算法
+Multimodal Delayed Particle Swarm Optimization
 author:flztiii
 
 """
