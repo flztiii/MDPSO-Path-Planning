@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import random
 
 # 定义全局变量
-DEBUG = False
+DEBUG = True
 
 # 利用MDPSO算法计算目标函数objective_function的最小值
 class MDPSO:
@@ -59,6 +59,11 @@ class MDPSO:
         # 初始化粒子群进化速度
         v_high = self.upper_bondary_ - self.lower_boundary_
         self.evolve_velocity_ = np.random.uniform(low=-v_high, high=v_high, size=(self.swarm_population_, self.dimension_))
+        # 粒子群记录器
+        self.pbest_recorder_ = []
+        self.pbest_value_recorder_ = []
+        self.gbest_recorder_ = []
+        self.gbest_value_recorder_ = []
 
     # 计算粒子与粒子群之间的距离
     def __distance(self, swarm_calc):
@@ -119,14 +124,17 @@ class MDPSO:
             s_g = E_f
             tau_i = int(np.floor(random.uniform(0,1) * float(self.iteration_)))
             tau_g = int(np.floor(random.uniform(0,1) * float(self.iteration_)))
+
+        assert(len(self.pbest_recorder_) == self.iteration_ + 1 and len(self.gbest_recorder_) == self.iteration_ + 1)
+        assert(self.iteration_ - tau_i >= 0 and self.iteration_ - tau_g >= 0)
         
         # 开始进行进化
         for i,_ in enumerate(self.swarms_):
             # 计算随机量
             r1, r2, r3, r4 = random.uniform(0,1), random.uniform(0,1), random.uniform(0,1), random.uniform(0,1)
             # 更新进化速度
-            # self.evolve_velocity_[i] = w * self.evolve_velocity_[i] + c1 * r1 * (self.pbests_[self.iteration_][i] - self.swarms_[i]) + c2 * r2 * (self.gbests_[self.iteration_] - self.swarms_[i]) + s_i * c3 * r3 * (self.pbests_[self.iteration_ - tau_i][i] - self.swarms_[i]) + s_g * c4 * r4 * (self.gbests_[self.iteration_ - tau_g] - self.swarms_[i])
-            self.evolve_velocity_[i] = w * self.evolve_velocity_[i] + c1 * r1 * (self.pbest_[i] - self.swarms_[i]) + c2 * r2 * (self.gbest_ - self.swarms_[i])
+            self.evolve_velocity_[i] = w * self.evolve_velocity_[i] + c1 * r1 * (self.pbest_[i] - self.swarms_[i]) + c2 * r2 * (self.gbest_ - self.swarms_[i]) + s_i * c3 * r3 * (self.pbest_recorder_[self.iteration_ - tau_i][i] - self.swarms_[i]) + s_g * c4 * r4 * (self.gbest_recorder_[self.iteration_ - tau_g] - self.swarms_[i])
+            # self.evolve_velocity_[i] = w * self.evolve_velocity_[i] + c1 * r1 * (self.pbest_[i] - self.swarms_[i]) + c2 * r2 * (self.gbest_ - self.swarms_[i])
             # 进行进化
             self.swarms_[i] += self.evolve_velocity_[i]
             self.swarms_[i] = np.clip(self.swarms_[i], self.lower_boundary_, self.upper_bondary_)
@@ -146,6 +154,11 @@ class MDPSO:
                     self.pbest_[i] = swarm
             self.gbest_ = self.__bestSwarm(self.pbest_)
             self.gbest_value_ = self.objective_function_(self.gbest_)
+            # 保存当前pbest和gbest信息
+            self.pbest_recorder_.append(self.pbest_.copy())
+            self.pbest_value_recorder_.append(self.pbest_value_.copy())
+            self.gbest_recorder_.append(self.gbest_.copy())
+            self.gbest_value_recorder_.append(self.gbest_value_.copy())
             # 判断是否迭代完成
             if self.gbest_value_ < self.threshold_:
                 break;
@@ -153,12 +166,11 @@ class MDPSO:
             self.__evolve()
             # 更新当前迭代次数
             self.iteration_ += 1
-            # 进行可视化
-            if DEBUG:
-                plt.cla()
-                plt.scatter(self.swarms_,self.swarms_)
-                plt.scatter([self.gbests_[-1]], [self.gbests_[-1]])
-                plt.pause(0.0001)
+        # 进行可视化
+        if DEBUG:
+            plt.figure()
+            plt.plot(range(0, len(self.gbest_value_recorder_)), np.log(self.gbest_value_recorder_))
+            plt.show()
         return self.gbest_
 
 # 测试函数
@@ -176,6 +188,40 @@ def test1():
     result = optimizer.startOptimization()
     print(result, objective_function(result))
 
+# 测试函数
+def test2():
+    # 定义目标函数
+    def objective_function(x):
+        return np.sum(np.abs(x)) + np.prod(np.abs(x))
+    # 定义输入维度
+    dimension = 20
+    # 定义搜索空间
+    search_space = (-10, 10)
+    # 初始化优化类
+    optimizer = MDPSO(objective_function, dimension, search_space)
+    # 开始进行优化
+    result = optimizer.startOptimization()
+    print(result, objective_function(result))
+
+# 测试函数
+def test3():
+    # 定义目标函数
+    def objective_function(x):
+        result = 0.0
+        for i, _ in enumerate(x):
+            for j in range(0, i):
+                result += np.sum(x[0:i])**2
+        return result
+    # 定义输入维度
+    dimension = 20
+    # 定义搜索空间
+    search_space = (-100, 100)
+    # 初始化优化类
+    optimizer = MDPSO(objective_function, dimension, search_space)
+    # 开始进行优化
+    result = optimizer.startOptimization()
+    print(result, objective_function(result))
+
 # 主函数
 if __name__ == "__main__":
-    test1()
+    test3()
