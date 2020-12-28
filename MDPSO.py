@@ -3,8 +3,8 @@
 
 """
 
-Multimodal Delayed Particle Swarm Optimization
-author:flztiii
+Multimodal Delayed Particle Swarm Optimization (MDPSO)
+Author:flztiii
 
 """
 
@@ -18,13 +18,13 @@ DEBUG = True
 # 利用MDPSO算法计算目标函数objective_function的最小值
 class MDPSO:
     # 参数初始化
-    def __init__(self, objective_function, dimension, search_space, swarm_population = 20, max_iteration = 20000, threshold = 0.01):
+    def __init__(self, objective_function, dimension, lower_boundary, upper_boundary, swarm_population = 20, max_iteration = 20000, threshold = 0.01):
         # 优化目标函数
         self.objective_function_ = objective_function
         # 输入维度
         self.dimension_ = dimension
         # 每个维度的边界
-        self.lower_boundary_, self.upper_bondary_ = np.array(search_space[0]) * np.ones(dimension), np.array(search_space[1]) * np.ones(dimension)
+        self.lower_boundary_, self.upper_boundary_ = lower_boundary, upper_boundary
         # 粒子群数量
         self.swarm_population_ = swarm_population
         # 最大迭代次数
@@ -47,7 +47,7 @@ class MDPSO:
     # 初始化粒子群计算
     def __initSwarms(self):
         # 初始化粒子群
-        self.swarms_ = np.random.uniform(low=self.lower_boundary_, high=self.upper_bondary_, size=(self.swarm_population_, self.dimension_))
+        self.swarms_ = np.random.uniform(low=self.lower_boundary_, high=self.upper_boundary_, size=(self.swarm_population_, self.dimension_))
         # 每一个粒子的历史最优位置
         self.pbest_ = self.swarms_.copy()
         # 每一个粒子的历史最优值
@@ -57,7 +57,7 @@ class MDPSO:
         # 粒子群的最优值
         self.gbest_value_ = np.inf
         # 初始化粒子群进化速度
-        v_high = self.upper_bondary_ - self.lower_boundary_
+        v_high = self.upper_boundary_ - self.lower_boundary_
         self.evolve_velocity_ = np.random.uniform(low=-v_high, high=v_high, size=(self.swarm_population_, self.dimension_))
         # 粒子群记录器
         self.pbest_recorder_ = []
@@ -137,7 +137,7 @@ class MDPSO:
             # self.evolve_velocity_[i] = w * self.evolve_velocity_[i] + c1 * r1 * (self.pbest_[i] - self.swarms_[i]) + c2 * r2 * (self.gbest_ - self.swarms_[i])
             # 进行进化
             self.swarms_[i] += self.evolve_velocity_[i]
-            self.swarms_[i] = np.clip(self.swarms_[i], self.lower_boundary_, self.upper_bondary_)
+            self.swarms_[i] = np.clip(self.swarms_[i], self.lower_boundary_, self.upper_boundary_)
     # 进行优化
     def startOptimization(self):
         # 初始化粒子群
@@ -181,9 +181,9 @@ def test1():
     # 定义输入维度
     dimension = 20
     # 定义搜索空间
-    search_space = (-100, 100)
+    lower_boundary, upper_boundary = np.array(-100) * np.ones(dimension), np.array(100) * np.ones(dimension)
     # 初始化优化类
-    optimizer = MDPSO(objective_function, dimension, search_space)
+    optimizer = MDPSO(objective_function, dimension, lower_boundary, upper_boundary)
     # 开始进行优化
     result = optimizer.startOptimization()
     print(result, objective_function(result))
@@ -196,9 +196,9 @@ def test2():
     # 定义输入维度
     dimension = 20
     # 定义搜索空间
-    search_space = (-10, 10)
+    lower_boundary, upper_boundary = np.array(-10) * np.ones(dimension), np.array(10) * np.ones(dimension)
     # 初始化优化类
-    optimizer = MDPSO(objective_function, dimension, search_space)
+    optimizer = MDPSO(objective_function, dimension, lower_boundary, upper_boundary)
     # 开始进行优化
     result = optimizer.startOptimization()
     print(result, objective_function(result))
@@ -215,9 +215,9 @@ def test3():
     # 定义输入维度
     dimension = 20
     # 定义搜索空间
-    search_space = (-100, 100)
+    lower_boundary, upper_boundary = np.array(-100) * np.ones(dimension), np.array(100) * np.ones(dimension)
     # 初始化优化类
-    optimizer = MDPSO(objective_function, dimension, search_space)
+    optimizer = MDPSO(objective_function, dimension, lower_boundary, upper_boundary)
     # 开始进行优化
     result = optimizer.startOptimization()
     print(result, objective_function(result))

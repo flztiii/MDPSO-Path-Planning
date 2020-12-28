@@ -3,8 +3,8 @@
 
 """
 
-Costmap Generation
-author: flztiii
+Costmap generation
+Author: flztiii
 
 """
 
@@ -27,7 +27,7 @@ class Costmap:
     
     # 判断是否超过边界
     def isVerify(self, x, y):
-        if (x >= 0 and x <= self.width_ and y >= 0 and y <= self.height_):
+        if (x >= 0 and x < self.width_ and y >= 0 and y < self.height_):
             return True
         else:
             return False
@@ -39,6 +39,10 @@ class Costmap:
         else:
             return True
     
+    # 求对应点的栅格下标
+    def getIndex(self, ix, iy):
+        return ix + iy * self.width_
+
     # 计算对应栅格坐标
     def getGridCoordinate(self, px, py):
         x, y = self.calcNewCoordinate(px, py)

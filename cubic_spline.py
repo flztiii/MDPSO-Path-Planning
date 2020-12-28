@@ -3,8 +3,8 @@
 
 """
 
-cubic spline planning
-author: flztiii
+Cubic spline planning
+Author: flztiii
 
 """
 
@@ -22,7 +22,6 @@ class Spline:
         self.y_ = y
         # 散点数量
         self.number_ = len(x)
-        print("len", self.number_)
         # 最大下标(也是方程式的个数，参数个数)
         self.n_ = len(x) - 1
         # 中间参数
